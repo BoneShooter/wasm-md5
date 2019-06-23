@@ -1,0 +1,73 @@
+<html>
+<head>
+    <title>
+        test cacl md5 with js and wasm 
+    </title>
+</head>
+<body>
+    <style type="text/css">
+        textarea {
+            width: 400px;
+            height: 100px;
+        }
+    </style>
+    <button onclick="calc()">calc md5</button>
+    <div>
+        <h3>oring value：</h3>
+        <p>
+            <textarea id="textarea-origin"></textarea>
+        </p>
+    </div>
+    <div>
+        <h3>js result：</h3>
+        <p>
+            <textarea id="textarea-js"></textarea>
+        </p>
+    </div>
+    <div>
+        <h3>wasm result：</h3>
+        <p>
+            <textarea id="textarea-wasm"></textarea>
+        </p>
+    </div>
+    <script type="text/javascript" src="../js/blueimp-md5.js"></script>
+    <script type="text/javascript" src="build/main.js"></script>
+    <script>
+        const textareaOrigin = document.getElementById('textarea-origin');
+        const textareaJs = document.getElementById('textarea-js');
+        const textareaWasm = document.getElementById('textarea-wasm');
+        let orginV = '';
+        const charList = ['a', ' ', 'c', '_', 'e', 'f', 'g', '#', 'i', '&', 'k', '*', 'm', '你', 'm'];
+        for (let i = 0; i < 100000; i++) {
+            const index = Math.floor(Math.random() * charList.length);
+            const char = charList[index];
+            orginV = orginV + char;
+        }
+        textareaOrigin.value = orginV;
+        function calc() {
+            let startTime;
+            let endTime;
+
+            // js
+            startTime = Date.now();
+            let resultJs;
+            resultJs = md5(orginV);
+            endTime = Date.now();
+            textareaJs.value = 'result: ' + resultJs + '\ntime: ' + (endTime - startTime) + 'ms';
+
+            // wasm
+            startTime = Date.now();
+            let resultWasm;
+            resultWasm = Module.ccall(
+                "getMD5", // c function name
+                "string", // return type
+                ["string"], // params type
+                [orginV], // params
+            );
+            endTime = Date.now();
+            textareaWasm.value = 'result: ' + resultWasm + '\ntime: ' + (endTime - startTime) + 'ms';
+        }
+    </script>
+</body>
+
+</html>
