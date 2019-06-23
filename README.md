@@ -8,7 +8,7 @@
 
 3. then open url : http://127.0.0.1:8080/main.html
 
-4. click "calc md5" button, see the result on page
+4. click "calc" button, see the result on page
 
 ### build wasm:
 
