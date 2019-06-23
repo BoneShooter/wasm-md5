@@ -4,16 +4,32 @@
     <title>
         test cacl md5 with js and wasm
     </title>
-</head>
-
-<body>
     <style type="text/css">
+        .container {
+            height: 30px;
+        }
+
+        .container button,
+        .container span {
+            vertical-align: middle;
+            line-height: 20px;
+        }
+
         textarea {
             width: 400px;
             height: 100px;
         }
     </style>
-    <button onclick="calc()">calc md5</button>
+</head>
+
+<body>
+    <div class="container">
+        <span>
+            calc md5 100 times :
+        </span>
+        <button onclick="calc()">calc</button>
+        <span style="display: none;color:red;" id="loading">...loading</span>
+    </div>
     <div>
         <h3>oring value：</h3>
         <p>
@@ -35,42 +51,49 @@
     <script type="text/javascript" src="../js/blueimp-md5.js"></script>
     <script type="text/javascript" src="build/main.js"></script>
     <script>
+        const loading = document.getElementById('loading');
         const textareaOrigin = document.getElementById('textarea-origin');
         const textareaJs = document.getElementById('textarea-js');
         const textareaWasm = document.getElementById('textarea-wasm');
         let orginV = '';
-        const charList = ['a', ' ', 'c', '_', 'e', 'f', 'g', '#', 'i', '&', 'k', '*', 'm', '你', 'm'];
-        for (let i = 0; i < 100000; i++) {
-            // about 100k
+        const charList = ['a', '^', 'c', '_', 'e', 'f', 'g', '#', 'i', '&', 'k', '*', 'm', 'p'];
+        for (let i = 0; i < 1024 * 1024; i++) {
+            // about 1M
             const index = Math.floor(Math.random() * charList.length);
             const char = charList[index];
             orginV = orginV + char;
         }
         textareaOrigin.value = orginV;
         function calc() {
-            let startTime;
-            let endTime;
-            // js
-            startTime = Date.now();
-            let resultJs;
-            // for (let i = 0; i < 1000; i++) { // 100kb *1000 = 100mb
-            resultJs = md5(orginV);
-            // }
-            endTime = Date.now();
-            textareaJs.value = 'result: ' + resultJs + '\ntime: ' + (endTime - startTime) + 'ms';
-            // wasm
-            startTime = Date.now();
-            let resultWasm;
-            // for (let i = 0; i < 1000; i++) { // 100kb *1000 = 100mb
-            resultWasm = Module.ccall(
-                "getMD5", // c function name
-                "string", // return type
-                ["string"], // params type
-                [orginV], // params
-            );
-            // }
-            endTime = Date.now();
-            textareaWasm.value = 'result: ' + resultWasm + '\ntime: ' + (endTime - startTime) + 'ms';
+            loading.style.display = 'inline-block';
+            // setTimeout for show loading
+            setTimeout(() => {
+                orginV = textareaOrigin.value;
+                let startTime;
+                let endTime;
+                // js
+                startTime = Date.now();
+                let resultJs;
+                for (let i = 0; i < 100; i++) { // 1M *100 = 100mb
+                    resultJs = md5(orginV);
+                }
+                endTime = Date.now();
+                textareaJs.value = 'result: ' + resultJs + '\ntime: ' + (endTime - startTime) + 'ms';
+                // wasm
+                startTime = Date.now();
+                let resultWasm;
+                for (let i = 0; i < 100; i++) { // 1M *100 = 100mb
+                    resultWasm = Module.ccall(
+                        "getMD5", // c function name
+                        "string", // return type
+                        ["string"], // params type
+                        [orginV], // params
+                    );
+                }
+                endTime = Date.now();
+                textareaWasm.value = 'result: ' + resultWasm + '\ntime: ' + (endTime - startTime) + 'ms';
+                loading.style.display = 'none';
+            }, 0);
         }
     </script>
 </body>
